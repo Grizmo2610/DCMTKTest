@@ -1,14 +1,14 @@
-#include <iostream>
 #include <filesystem>
+#include <iostream>
 #include <vector>
 #include <opencv2/opencv.hpp>
 
 #include "dcmtk/dcmdata/dctk.h"
 #include "dcmtk/dcmimgle/dcmimage.h"
-#include "dcmtk/dcmjpeg/djencode.h"
 #include "dcmtk/dcmjpeg/djdecode.h"
+#include "dcmtk/dcmjpeg/djencode.h"
 #include "dcmtk/dcmjpeg/djrplol.h"
-
+#include "dcmtk/dcmpstat/dvpstat.h"
 
 using namespace std;
 using namespace cv;
@@ -106,15 +106,15 @@ bool encoding(const string &inputPath, const string &outputPath,
 }
 
 bool decoding(const string &path,
-                const string &outputPath = "../test_decompressed.dcm",
-                const E_TransferSyntax transferSyntax = EXS_LittleEndianImplicit) {
+              const string &outputPath = "../test_decompressed.dcm",
+              const E_TransferSyntax transferSyntax = EXS_LittleEndianImplicit) {
     DJDecoderRegistration::registerCodecs(); // register JPEG codecs
     if (DcmFileFormat fileFormat; fileFormat.loadFile(path.data()).good()) {
         if (DcmDataset *dataset = fileFormat.getDataset();
             dataset->chooseRepresentation(transferSyntax, nullptr).good() &&
             dataset->canWriteXfer(transferSyntax)) {
             fileFormat.saveFile(outputPath.data(), transferSyntax);
-        }else {
+        } else {
             DJDecoderRegistration::cleanup();
             return false;
         }
@@ -171,6 +171,19 @@ void deleteFiles(const vector<string> &paths) {
     }
 }
 
+
+void statTest(const string *path) {
+    if (DcmFileFormat infile; infile.loadFile(path->data()).good()) {
+        if (DVPresentationState state; state.createFromImage(*infile.getDataset()).good()) {
+            // serialize presentation state into DICOM data set structure
+            if (DcmFileFormat outfile; state.write(*outfile.getDataset(), OFFalse).good()) {
+                // and write to file
+                outfile.saveFile("../temp.dcm", EXS_LittleEndianExplicit);
+            }
+        }
+    }
+}
+
 int main() {
     const auto dictPath = "/mnt/c/Windows/System32/dcmtk/dcmdata/data/dicom.dic";
     setenv("DCMDICTPATH", dictPath, 1);
@@ -183,7 +196,7 @@ int main() {
 
     const string &inputPath = paths[200];
 
-    constexpr E_TransferSyntax tag = EXS_JPEGProcess17_19;
+    constexpr E_TransferSyntax tag = EXS_JPEGProcess14SV1;
     if (const string &outputPath = "../output.dcm";
         encoding(inputPath, outputPath, tag)) {
         constexpr int bright = 20;
@@ -192,17 +205,18 @@ int main() {
         if (decoding(outputPath, decompressedPath)) {
             display(decompressedPath, "Decompressed Image", bright);
             cout << "PNSR: " << calculatePNSR(inputPath, decompressedPath) << endl;
-        }else {
+        } else {
             cerr << "Error in Decoding DICOM image." << endl;
         }
         vector<string> files;
         files.push_back(outputPath);
         files.push_back(decompressedPath);
-
         deleteFiles(files);
     } else {
         cerr << "Error in Encoding DICOM image." << endl;
     }
+
+    statTest(&inputPath);
 
     return 0;
 }

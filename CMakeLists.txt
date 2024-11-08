@@ -18,6 +18,9 @@ include_directories(${OPENCV_INCLUDE_DIRS})
 # set output executable of our test program
 add_executable(DCMTKTEST src/main.cpp)
 add_executable(Compression src/Compress.cpp)
+add_executable(DCMTKNET src/net/TestNet.cpp
+        src/net/SCU.cpp
+        src/net/SCU.h)
 
 # link DCMTK library files
 target_link_libraries(DCMTKTEST DCMTK::DCMTK)
@@ -26,3 +29,6 @@ target_link_libraries(DCMTKTEST  ${OpenCV_LIBS})
 #target_link_libraries(Compression dcmjpeg dcmect dcmpmap dcmtract dcmseg dcmfg dcmiod dcmrt dcmpstat dcmqrdb dcmwlm dcmdsig cmr dcmsr dcmnet dcmtls dcmtkcharls dcmjpls ijg16 ijg12 ijg8 dcmjpeg dcmimage dcmimgle dcmxml i2d dcmdata oflog ofstd oficonv z)
 target_link_libraries(Compression DCMTK::DCMTK)
 target_link_libraries(Compression  ${OpenCV_LIBS})
+
+target_link_libraries(DCMTKNET DCMTK::DCMTK)
+target_link_libraries(DCMTKNET  ${OpenCV_LIBS})
