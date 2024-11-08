@@ -1,0 +1,34 @@
+# User-specific files
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Build directories
+cmake-build-release*/
+cmake-build-debug*/
+CMakeFiles/
+CMakeCache.txt
+Makefile
+*.cmake
+*.db
+*.so
+*.a
+*.dylib
+*.exe
+
+# Temporary files
+*.swp
+*.swo
+*.log
+*.bak
+*.tmp
+
+# IDE specific
+.vscode/
+*.sublime-workspace
+*.sublime-project
+
+# System files
+.DS_Store
+Thumbs.db
